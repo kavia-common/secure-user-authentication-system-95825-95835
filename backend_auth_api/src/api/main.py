@@ -27,11 +27,16 @@ app = FastAPI(
     ],
 )
 
-# CORS: do not use wildcard with allow_credentials True
+# CORS configuration:
+# - Default to allowing http://localhost:3000 plus any BACKEND_CORS_ORIGINS provided.
+# - Credentials off by default to simplify local dev, can be toggled via BACKEND_CORS_CREDENTIALS=true.
+cors_origins = list(set(get_allowed_origins_from_env() + ["http://localhost:3000"]))
+allow_credentials_env = os.getenv("BACKEND_CORS_CREDENTIALS", "false").lower() in ("1", "true", "yes")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_allowed_origins_from_env(),
-    allow_credentials=False,  # Frontend uses axios without credentials; set to False for wildcard-like behavior
+    allow_origins=cors_origins,
+    allow_credentials=allow_credentials_env,
     allow_methods=["*"],
     allow_headers=["*"],
 )
